@@ -18,13 +18,10 @@ postgres-start:
 postgres-stop:
 	docker stop $(DB_CONTAINER) || true
 	docker rm $(DB_CONTAINER) || true
-# This target is used to create a new database if database does not exist already.
+
 createdb:
 	docker exec -it $(DB_CONTAINER) $(DB_CREATE_COMMAND)
 
-# This target will connect to the PostgreSQL server and drop the specified database.
-# Usage: make dropdb
-# Ensure that the database server is running and you have the necessary permissions to drop the database.
 dropdb:
 	docker exec -it $(DB_CONTAINER) $(DB_TERMINATE_COMMAND)
 	docker exec -it $(DB_CONTAINER) $(DB_DROP_COMMAND)
@@ -35,6 +32,11 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_IP_ADDRESS):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down
 
+sqlc:
+	cd ./db && sqlc generate 
+test:
+	go test ./... -v -cover
 
-.PHONY: createdb dropdb postgres-start postgres-stop migrateup migratedown
+
+.PHONY: createdb dropdb postgres-start postgres-stop migrateup migratedown sqlc
 
